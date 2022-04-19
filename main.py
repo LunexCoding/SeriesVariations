@@ -7,30 +7,21 @@ class SeriesVariations:
 
     def __init__(self, array=None):
         self._array = array
-        self.calcBasicParameters()
-
-    def calcBasicParameters(self):
         self._lenArray = len(self._array)
         self._maxArray = max(self._array)
         self._minArray = min(self._array)
-
-        self._numberIntervals = 1 + 3.322 * log10(self._lenArray)
-
-        self._roundNumberIntervals = int(
-            self._numberIntervals + (0.5 if self._numberIntervals > 0 else -0.5))
+        self._numberIntervals = round(1 + 3.322 * log10(self._lenArray), 2)
+        self._roundNumberIntervals = int(self._numberIntervals + (0.5 if self._numberIntervals > 0 else -0.5))
         self._sizeIntervals = round((self._maxArray - self._minArray) / self._numberIntervals, 1)
-
+        self._firstX = round(self._minArray - self._sizeIntervals / 2, 2)
 
     def calcSeries(self):
-
-        firstX = self._minArray - self._sizeIntervals / 2
-
         intervalNumber = 0
         numberIntervalElements = 0
         numberAccumulationsIntervalElements = 0
         numberAccumulationsIntervalFrequency = 0
 
-        minX = firstX - self._sizeIntervals
+        minX = self._firstX - self._sizeIntervals
         maxX = minX + self._sizeIntervals
 
         while maxX < self._maxArray:
@@ -46,9 +37,25 @@ class SeriesVariations:
             numberAccumulationsIntervalElements += numberIntervalElements
             numberAccumulationsIntervalFrequency += frequency
 
-            yield intervalNumber, round(minX, 2), round(maxX, 2), numberIntervalElements, frequency, numberAccumulationsIntervalElements, round(numberAccumulationsIntervalFrequency, 2)
+            yield intervalNumber,\
+                  round(minX, 2),\
+                  round(maxX, 2),\
+                  numberIntervalElements,\
+                  frequency,\
+                  numberAccumulationsIntervalElements,\
+                  round(numberAccumulationsIntervalFrequency, 2)
+
             numberIntervalElements = 0
 
+    def getBasicParameters(self):
+        return f"""n = {self._lenArray}
+max = {self._maxArray}
+min = {self._minArray}
+m = 1 + 3,322 * lg({self._lenArray}) = {self._numberIntervals}
+~m = {self._roundNumberIntervals}
+k = ({self._maxArray} - {self._minArray}) / {self._numberIntervals} ≈ {self._sizeIntervals}
+x1 = {self._minArray} - {self._sizeIntervals} / 2 ≈ {self._firstX}
+      """
 
     def getSeriesVariations(self):
         table = PrettyTable()
@@ -77,9 +84,10 @@ while True:
 
         else:
             series = SeriesVariations(array)
+            print(series.getBasicParameters())
             print(series.getSeriesVariations())
 
-    except Exception:
-        print('Ошибка ввода!')
+    except Exception as e:
+        print(e)
     except KeyboardInterrupt:
         sys.exit()
