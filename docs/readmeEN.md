@@ -34,9 +34,10 @@ this case, increase the degree of rounding until your cumulative frequency equal
 * `h` - interval size
 * `x0` - lower bound of the first interval
 * `Xe` - arithmetic mean
-* `σ` - standard deviation
 * `De` - dispersion
-
+* `S^2`- corrected sample variance
+* `σ` - standard deviation
+* `S` - corrected standard deviation
 
 * `I` - interval number
 * `Interval` - Interval [lower bound - upper bound)
@@ -53,5 +54,7 @@ this case, increase the degree of rounding until your cumulative frequency equal
 * $h = \frac{max - min}k$
 * $x0 = min$
 * $Xe = \frac{sum(xi)}{n}$
-* $σ = \frac{sum(xini)}{n}$
 * $De = \surdσ$
+* $S^{2}= \frac{n}{n-1}* De$
+* $σ = \frac{sum(xini)}{n}$
+* $S = \sqrt{S^{2}}$

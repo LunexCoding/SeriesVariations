@@ -3,11 +3,15 @@ from math import log10, floor, sqrt
 from prettytable import PrettyTable
 
 
+_DEFAULT_FILENAME = 'series.txt'
+_DEGREE_OF_ROUNDING = 2
+
+
 class SeriesVariations:
-    def __init__(self):
+    def __init__(self, filename=_DEFAULT_FILENAME, degreeOfRounding=_DEGREE_OF_ROUNDING):
         self._array = None
-        self._filename = 'series.txt'
-        self._degreeOfRounding = 2
+        self._filename = filename
+        self._degreeOfRounding = degreeOfRounding
         self._createFile()
 
     def setDegreeOfRounding(self, mode):
@@ -40,8 +44,13 @@ class SeriesVariations:
         self._numberIntervals = floor(1 + 3.322 * log10(self._lenArray))
         self._sizeIntervals = round((self._maxArray - self._minArray) / self._numberIntervals, self._degreeOfRounding)
 
+        self._countSampleMean = 0
+        self._countSampleMeanSquare = 0
+
         self._sampleMeanSquare = 0
+        self._correctedMeanSquare = 0
         self._sampleVariance = 0
+        self._correctedSampleVariance = 0
         self._sampleMean = 0
         self._table = None
 
@@ -66,8 +75,8 @@ class SeriesVariations:
                     if minX <= num <= maxX:
                         numberIntervalElements += 1
 
-            sampleMean = round(middleValueInterval * numberIntervalElements, 6)
-            sampleMeanSquare = round((middleValueInterval ** 2) * numberIntervalElements, 6)
+            sampleMean = round(middleValueInterval * numberIntervalElements, 4)
+            sampleMeanSquare = round((middleValueInterval ** 2) * numberIntervalElements, 4)
             frequency = round(numberIntervalElements / self._lenArray, self._degreeOfRounding)
             numberAccumulationsIntervalElements += numberIntervalElements
             numberAccumulationsIntervalFrequency += frequency
@@ -94,12 +103,11 @@ class SeriesVariations:
     k = 1 + 3,322 * lg({self._lenArray}) = {self._numberIntervals}
     h = ({self._maxArray} - {self._minArray}) / {self._numberIntervals} = {self._sizeIntervals}
     x0 = {self._minArray}
-    Xe = {self._sampleMean}
-    σ = {self._sampleMeanSquare}
-    De = {self._sampleVariance}
-    -------
-    Xe - Среднее арифметическое
-    σ - выборочное среднее квадратическое отклонение
+    Xe = {self._countSampleMean} / {self._lenArray} = {self._sampleMean}
+    De = {self._countSampleMeanSquare} / {self._lenArray} - {self._sampleMean}^2 = {self._sampleVariance}
+    S^2 = {self._lenArray} / {self._lenArray - 1} * {self._sampleVariance} = {self._correctedSampleVariance}
+    σ = √{self._sampleVariance} = {self._sampleMeanSquare}
+    S = √{self._correctedSampleVariance} = {self._correctedMeanSquare}
     """
 
     def _getSeriesVariations(self):
@@ -129,13 +137,18 @@ class SeriesVariations:
                        'Σ',
                        '-',
                        countElements,
-                       round(countSampleMean, 6),
-                       round(countSampleMeanSquare, 6),
+                       round(countSampleMean, 4),
+                       round(countSampleMeanSquare, 4),
                        round(countFrequency, 2)])
 
-        self._sampleMean = round(countSampleMean / self._lenArray, 6)
-        self._sampleVariance = round((countSampleMeanSquare / self._lenArray) - self._sampleMean ** 2, 6)
-        self._sampleMeanSquare = round(sqrt(self._sampleVariance), 6)
+        self._countSampleMean = countSampleMean
+        self._countSampleMeanSquare = countSampleMeanSquare
+
+        self._sampleMean = round(countSampleMean / self._lenArray, 4)
+        self._sampleVariance = round((countSampleMeanSquare / self._lenArray) - self._sampleMean ** 2, 4)
+        self._correctedSampleVariance = round((self._lenArray / (self._lenArray - 1)) * self._sampleVariance, 4)
+        self._sampleMeanSquare = round(sqrt(self._sampleVariance), 4)
+        self._correctedMeanSquare = round(sqrt(self._correctedSampleVariance), 4)
         return table
 
     def _viewTable(self):
